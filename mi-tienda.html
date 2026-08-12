@@ -1,0 +1,239 @@
+<!DOCTYPE html> 
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Tienda</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body { 
+            front-family: sans-serfi;
+            background: #EDE6D8;
+        }
+
+        .app { 
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 220px;
+            background: #E3D8C3;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 6px;
+        }
+
+        .logo{
+            font-size: 1.4rem;
+            font-weight: bold;
+            marging-bottom: 20px;
+        }
+
+        .nav-item {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            text-align: left;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .nav-item:hover { 
+            background: rgba(0,0,0,0.08)
+        }
+
+        .nav-item.active {
+            background: #c9b896;
+            font-weight: bold;
+        }
+
+        .main {
+            flex: 1;
+            padding: 30px;
+        }
+
+        section { 
+            display: none;
+        }
+
+        section.visible { 
+            display: block;
+        }
+
+        #lista-productos, #lista-carrito {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .producto {
+            background: #FBF7EF;
+            border: 1px solid #DCD0B8;
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .producto .precio {
+            color: #8B6A45;
+            font-Weight: bold;
+            margin: 8px 0;
+        }
+
+        .producto button {
+            background: #8B6A45;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="App">
+
+        <aside class="sidebar">
+            <div class="logo">Tienda</div>
+            <button class="nav-item" data-section="explorar">🧭 Explorar</button>
+            <button class="nav-item" data-section="carrito">🛒 Carrito (<span id="contador-carrito">0</span>)</button>
+            <button class="nav-item" data-section="pedidos">📦 Pedidos</button>
+            <button class="nav-item" data-section="cuenta">👤 Mi cuenta</button>
+            <button class="nav-item" data-section="soporte">💬 Soporte</button>
+        </aside>
+
+        <main class="main">
+            
+            <section id="explorar">
+                <h1>Explorar</h1>
+                <p>Productos destacados para ti</p>
+                <div id="lista-productos"></div>
+            </section>
+
+            <section id="carrito">
+                <h1>carrito</h1>
+                <p id="carrito-vacio">Aun no has agregado productos</p>
+                <div id="lista-carrito"></div>
+            </section>
+
+            <section id="pedidos">
+                <h1>pedidos</h1>
+                <p>Todavia no tienes pedidos realizados</p>
+            </section>
+
+            <section id="cuenta">
+                <h1>mi cuenta</h1>
+                <p>Tus datos personales</p>
+            </section>
+
+            <section id="soporte">
+                <h1>soporte</h1>
+                <p>Escribenos a soporte@tienda.cl</p>
+            </section>
+
+        </main>
+    </div>
+    <script>
+        const productos = [
+            {id: 1, nombre: "Mouse inalambrico", precio: 9990, emoji: "🖱️"},
+            {id: 2, nombre: "Teclado mecanico", precio: 34990, emoji: "⌨️"},
+            {id: 3, nombre: "Audifonos gamer", precio: 24990, emoji: "🎧"},
+            {id: 4, nombre: "Mousepad XL", precio: 7990, emoji: "🟫"},
+        ];
+
+        let carrito = [];
+
+        function mostrarProductos() {
+            const contenedor = document.getElementById('lista-productos');
+
+            let html = '';
+            productos.forEach(function(producto) {
+                html += `
+                <div class="producto">
+                    <div style="font-size: 2rem;">${producto.emoji}</div>
+                    <h3>${producto.nombre}</h3>
+                    <div class="precio">$${producto.precio}</div>
+                    <button onclick="agregarAlCarrito(${producto.id})">Agregar al carrito</button>
+                </div>
+            `;
+            });
+
+            contenedor.innerHTML = html;
+        }
+
+        function agregarAlCarrito(id) {
+            const producto = productos.find(function(p) {
+                return p.id === id;
+            });
+            carrito.push(producto);
+            actualizarContador();
+            mostrarCarrito();
+        }
+
+        function actualizarContador() {
+            document.getElementById('contador-carrito').textContent = carrito.length;
+        }
+
+        function mostrarCarrito() {
+            const contenedor = document.getElementById('lista-carrito');
+            const mensajeVacio = document.getElementById('carrito-vacio');
+
+            if (carrito.length === 0 ) {
+                mensajeVacio.style.display = 'block';
+                contenedor.innerHTML = '';
+                return;
+            }
+
+            mensajeVacio.style.display = 'none';
+
+            let html = '';
+            carrito.forEach(function(producto) {
+                html += `
+                  <div class="producto">
+                    <div style="font-size: 2rem;">${producto.emoji}</div>
+                    <h3>${producto.nombre}</h3>
+                    <div class="precio">$${producto.precio}</div>
+                  </div>
+                `;
+            });
+
+            contenedor.innerHTML = html;
+
+        }
+
+        mostrarProductos();
+
+        const botones = document.querySelectorAll('.nav-item');
+
+        botones.forEach(function(boton) {
+            boton.addEventListener('click', function() {
+                const idSeccion = boton.dataset.section;
+
+                botones.forEach(function(b) {
+                    b.classList.remove('active');
+                });
+
+                boton.classList.add('active');
+
+                const todasLasSecciones = document. querySelectorAll('section');
+                todasLasSecciones.forEach(function(seccion) {
+                    seccion.classList.remove('visible');
+
+                });
+
+                document.getElementById(idSeccion).classList.add('visible');
+            });
+        });
+    </script>
+</body>    
+</html>
